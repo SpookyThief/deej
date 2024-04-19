@@ -41,7 +41,7 @@ type SliderMoveEvent struct {
 	PercentValue float32
 }
 
-var expectedLinePattern = regexp.MustCompile(`^\d{1,4}(\|\d{1,4})*\r\n$`)
+var expectedLinePattern = regexp.MustCompile(`^\d{1,4}(\|\d{1,4})*M:\d{1,2}(\|\d{1,2})*\r\n$`) //Original regex no mute: ^\d{1,4}(\|\d{1,4})*\r\n$
 
 // NewSerialIO creates a SerialIO instance that uses the provided deej
 // instance's connection info to establish communications with the arduino chip
@@ -232,15 +232,21 @@ func (sio *SerialIO) handleLine(logger *zap.SugaredLogger, line string) {
 	// but most lines will end with CRLF. it may also have garbage instead of
 	// deej-formatted values, so we must check for that! just ignore bad ones
 	if !expectedLinePattern.MatchString(line) {
+		logger.Debug("You fucked up the regex...", "line", line)
 		return
 	}
 
 	// trim the suffix
 	line = strings.TrimSuffix(line, "\r\n")
 
+	//split into sliders and mutes
+	parts := strings.Split(line, "M:")
+
 	// split on pipe (|), this gives a slice of numerical strings between "0" and "1023"
-	splitLine := strings.Split(line, "|")
-	numSliders := len(splitLine)
+	sliderVals := strings.Split(parts[0], "|")
+	numSliders := len(sliderVals)
+
+	muteVals := strings.Split(parts[1], "|")
 
 	// update our slider count, if needed - this will send slider move events for all
 	if numSliders != sio.lastKnownNumSliders {
@@ -256,7 +262,7 @@ func (sio *SerialIO) handleLine(logger *zap.SugaredLogger, line string) {
 
 	// for each slider:
 	moveEvents := []SliderMoveEvent{}
-	for sliderIdx, stringValue := range splitLine {
+	for sliderIdx, stringValue := range sliderVals {
 
 		// convert string values to integers ("1023" -> 1023)
 		number, _ := strconv.Atoi(stringValue)
@@ -266,7 +272,7 @@ func (sio *SerialIO) handleLine(logger *zap.SugaredLogger, line string) {
 		if sliderIdx == 0 && number > 1023 {
 			sio.logger.Debugw("Got malformed line from serial, ignoring", "line", line)
 			return
-		}
+		} 
 
 		// map the value from raw to a "dirty" float between 0 and 1 (e.g. 0.15451...)
 		dirtyFloat := float32(number) / 1023.0
