@@ -2,7 +2,10 @@ const int NUM_SLIDERS = 1;
 const int NUM_MUTE = 1;
 const int analogInputs[NUM_SLIDERS] = {A0};
 const int digialInputs[NUM_MUTE] = {2};
- 
+const int forwardPins[NUM_SLIDERS] = {4};
+const int reversPins[NUM_SLIDERS] = {5};
+const int enable = 3;
+
 int analogSliderValues[NUM_SLIDERS];
 bool muteValues[NUM_MUTE];
 unsigned long lastPressed[NUM_MUTE];
@@ -11,6 +14,14 @@ unsigned long lastPressed[NUM_MUTE];
 void setup() { 
   for (int i = 0; i < NUM_SLIDERS; i++) {
     pinMode(analogInputs[i], INPUT);
+    
+    pinMode(enable, OUTPUT);
+    digitalWrite(enable, LOW);
+    
+    pinMode(forwardPins[i], OUTPUT);
+    pinMode(reversPins[i], OUTPUT);
+    digitalWrite(forwardPins[i], LOW);
+    digitalWrite(reversPins[i], LOW);
   }
   for (int i = 0; i < NUM_MUTE; i++){
     pinMode(digialInputs[i], INPUT_PULLUP);
@@ -22,7 +33,7 @@ void setup() {
 void loop() {
   updateSliderValues();
   updateMuteValues();
-  sendSliderValues(); // Actually send data (all the time)
+  sendValues(); // Actually send data (all the time)
   // printSliderValues(); // For debug
   delay(10);
 }
@@ -42,7 +53,7 @@ void updateMuteValues(){
   }
 }
 
-void sendSliderValues() {
+void sendValues() {
   String builtString = String("");
 
   for (int i = 0; i < NUM_SLIDERS; i++) {
@@ -77,4 +88,34 @@ void printSliderValues() {
   }
 }
 
+void moveSliders(int targetPos[], int toMove[]){
+  int num_toMove = arrlength(toMove);
+  int currentPos[num_toMove];
 
+  for(int i = 0; i < num_toMove; i++){
+    currentPos[i] = analogRead(analogInputs[toMove[i]]);
+
+  }
+}
+
+
+
+int arrlength(int arr[]){
+  if(sizeof(arr)< sizeof(int)){
+    return 0;
+  }
+  return sizeof(arr)/sizeof(int);
+}
+
+void setDirection(int direction, int sliderID){
+  if(direction == 2){
+    digitalWrite(reversPins[sliderID], LOW);
+    digitalWrite(forwardPins[sliderID], HIGH);
+  }else if (direction == 1){
+    digitalWrite(reversPins[sliderID], HIGH);
+    digitalWrite(forwardPins[sliderID], LOW);
+  }else{
+    digitalWrite(reversPins[sliderID], LOW);
+    digitalWrite(forwardPins[sliderID], LOW);
+  }
+}
