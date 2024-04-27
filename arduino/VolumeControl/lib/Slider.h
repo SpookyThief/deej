@@ -5,8 +5,9 @@ class Slider{
         void updateValue();
         int getValue();
         void stop();
-        int Slider::getA_Out();
-        int Slider::getFWDPin();
-        int Slider::getRevPin();
-        int Slider::getEnPin();
+        int getA_Out();
+        int getFWDPin();
+        int getRevPin();
+        int getEnPin();
+        int getid();
 };
