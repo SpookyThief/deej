@@ -6,13 +6,12 @@ int pin;
 int sliderId;
 
 Mute::Mute(int id, int p){
-    pin = p;
-    value = getValue();
     sliderId = id;
+    pin = p;
+    updateValue();
 }
 
 int Mute::getValue(){
-    updateValue();
     return value;
 }
 

@@ -1,5 +1,6 @@
 #include "Util.h"
 #include "Slider.h"
+#include "mute.h"
 #include <iostream>
 #include <vector>
 
@@ -19,14 +20,14 @@ int Util::arrlength(Slider arr[]){
   return sizeof(arr)/sizeof(Slider);
 }
 
-void Util::sendValues(Slider sliders[], int muteVal[]) {
+void Util::sendValues(vector<Slider> sliders, vector<Mute> mutes) {
   String builtString = String("");
-  int numSliders = Util::arrlength(sliders);
-  int numMutes = Util::arrlength(muteVal);
+  int numSliders = sliders.size();
+  int numMutes = mutes.size();
 
 
-  for (int i = 0; i < numSliders; i++) {
-    builtString += String((int)sliders[i].getValue());
+  for (int i; i < numSliders; i++) {
+    builtString += String((int)sliders.at(0).getValue());
 
     if (i < numSliders - 1) {
       builtString += String("|");
@@ -35,7 +36,7 @@ void Util::sendValues(Slider sliders[], int muteVal[]) {
   builtString += String("M:");
 
   for (int i = 0; i < numMutes; i++){
-    builtString += String(muteVal[i]);
+    builtString += String(mutes.at(i).getValue());
     if (i < numMutes - 1){
       builtString += String("|");
     }
@@ -44,11 +45,12 @@ void Util::sendValues(Slider sliders[], int muteVal[]) {
   Serial.println(builtString);
 }
 
-Slider getSliderbyID(int id, vector<Slider> sliders){
+Slider Util::getSliderbyID(int id, vector<Slider> sliders){
   for (Slider slider : sliders){
      if(slider.getid() == id){
       return slider;
      }
-     return;
+     continue;
   }
+  return;
 }
